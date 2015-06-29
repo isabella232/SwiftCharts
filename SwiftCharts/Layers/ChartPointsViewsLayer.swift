@@ -32,21 +32,14 @@ public class ChartPointsViewsLayer<T: ChartPoint, U: UIView>: ChartPointsLayer<T
         super.display(chart: chart)
         
         self.viewsWithChartPoints = self.generateChartPointViews(chartPointModels: self.chartPointsModels, chart: chart)
-        
-        if self.delayBetweenItems == 0 {
-            for v in self.viewsWithChartPoints {chart.addSubview(v.view)}
-            
-        } else {
-            func next(index: Int, delay: dispatch_time_t) {
-                if index < self.viewsWithChartPoints.count {
-                    dispatch_after(delay, dispatch_get_main_queue()) {() -> Void in
-                        let view = self.viewsWithChartPoints[index].view
-                        chart.addSubview(view)
-                        next(index + 1, delay: ChartUtils.toDispatchTime(self.delayBetweenItems))
-                    }
-                }
-            }
-            next(0, delay: 0)
+
+        for (index, viewWithChartPoint) in self.viewsWithChartPoints.enumerate() {
+            let view = viewWithChartPoint.view
+            view.alpha = 0
+            chart.addSubview(view)
+            UIView.animateWithDuration(0, delay: NSTimeInterval(self.displayDelay) + NSTimeInterval(index) * NSTimeInterval(self.delayBetweenItems), options: .BeginFromCurrentState, animations: {
+                view.alpha = 1
+            }, completion: nil)
         }
     }
     

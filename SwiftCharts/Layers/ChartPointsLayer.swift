@@ -24,7 +24,7 @@ public class ChartPointsLayer<T: ChartPoint>: ChartCoordsSpaceLayer {
 
     let chartPointsModels: [ChartPointLayerModel<T>]
     
-    private let displayDelay: Float
+    public let displayDelay: Float
     
     public var chartPointScreenLocs: [CGPoint] {
         return self.chartPointsModels.map{$0.screenLoc}
@@ -43,13 +43,7 @@ public class ChartPointsLayer<T: ChartPoint>: ChartCoordsSpaceLayer {
 
 
     override public func chartInitialized(chart chart: Chart) {
-        if self.displayDelay == 0 {
-            self.display(chart: chart)
-        } else {
-            dispatch_after(ChartUtils.toDispatchTime(self.displayDelay), dispatch_get_main_queue()) {() -> Void in
-                self.display(chart: chart)
-            }
-        }
+        self.display(chart: chart)
     }
     
     func display(chart chart: Chart) {}
