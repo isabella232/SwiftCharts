@@ -32,23 +32,14 @@ public class ChartPointsViewsLayer<T: ChartPoint, U: UIView>: ChartPointsLayer<T
         super.display(chart: chart)
         
         self.viewsWithChartPoints = self.generateChartPointViews(chartPointModels: self.chartPointsModels, chart: chart)
-        
-        if self.delayBetweenItems == 0 {
-            for v in self.viewsWithChartPoints {chart.addSubview(v.view)}
-            
-        } else {
-            var next: (Int, dispatch_time_t) -> () = {_, _ in} // no-op closure, workaround for local recursive function. See http://stackoverflow.com/a/24272256
-            next = {index, delay in
-                if index < self.viewsWithChartPoints.count {
-                    dispatch_after(delay, dispatch_get_main_queue()) {() -> Void in
-                        let view = self.viewsWithChartPoints[index].view
-                        chart.addSubview(view)
-                        
-                        next(index + 1, ChartUtils.toDispatchTime(self.delayBetweenItems))
-                    }
-                }
-            }
-            next(0, 0)
+
+        for (index, viewWithChartPoint) in enumerate(self.viewsWithChartPoints) {
+            var view = viewWithChartPoint.view
+            view.alpha = 0
+            chart.addSubview(view)
+            UIView.animateWithDuration(0, delay: NSTimeInterval(self.displayDelay) + NSTimeInterval(index) * NSTimeInterval(self.delayBetweenItems), options: .BeginFromCurrentState, animations: {
+                view.alpha = 1
+            }, completion: nil)
         }
     }
     
