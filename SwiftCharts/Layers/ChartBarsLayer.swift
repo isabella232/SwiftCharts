@@ -38,9 +38,12 @@ class ChartBarsViewGenerator<T: ChartBarModel> {
     let chartInnerFrame: CGRect
     let direction: ChartBarDirection
     let barWidth: CGFloat
-    
-    init(horizontal: Bool, xAxis: ChartAxisLayer, yAxis: ChartAxisLayer, chartInnerFrame: CGRect, barWidth barWidthMaybe: CGFloat?, barSpacing barSpacingMaybe: CGFloat?) {
-        
+
+    typealias ViewGeneratorClosure = (barModel: T, viewPoints: (CGPoint, CGPoint), barWidth: CGFloat, bgColor: UIColor?) -> ChartPointViewBar
+    var viewGenerator: ViewGeneratorClosure?
+
+    init(horizontal: Bool, xAxis: ChartAxisLayer, yAxis: ChartAxisLayer, chartInnerFrame: CGRect, barWidth barWidthMaybe: CGFloat?, barSpacing barSpacingMaybe: CGFloat?, viewGenerator: ViewGeneratorClosure? = nil) {
+
         let direction: ChartBarDirection = {
             switch (horizontal: horizontal, yLow: yAxis.low, xLow: xAxis.low) {
             case (horizontal: true, yLow: true, _): return .LeftToRight
@@ -55,7 +58,7 @@ class ChartBarsViewGenerator<T: ChartBarModel> {
                 case .LeftToRight: return yAxis
                 case .BottomToTop: return xAxis
                 }
-                }()
+            }()
             let spacing: CGFloat = barSpacingMaybe ?? 0
             return axis.minAxisScreenSpace - spacing
         }()
@@ -65,6 +68,7 @@ class ChartBarsViewGenerator<T: ChartBarModel> {
         self.chartInnerFrame = chartInnerFrame
         self.direction = direction
         self.barWidth = barWidth
+        self.viewGenerator = viewGenerator
     }
     
     func viewPoints(barModel: T, constantScreenLoc: CGFloat) -> (p1: CGPoint, p2: CGPoint) {
@@ -90,6 +94,10 @@ class ChartBarsViewGenerator<T: ChartBarModel> {
         let constantScreenLoc = constantScreenLocMaybe ?? self.constantScreenLoc(barModel)
         
         let viewPoints = self.viewPoints(barModel, constantScreenLoc: constantScreenLoc)
+
+        if let viewGenerator = viewGenerator {
+            return viewGenerator(barModel: barModel, viewPoints: viewPoints, barWidth: barWidth, bgColor: bgColor)
+        }
         return ChartPointViewBar(p1: viewPoints.p1, p2: viewPoints.p2, width: self.barWidth, bgColor: bgColor, animDuration: animDuration)
     }
 }
