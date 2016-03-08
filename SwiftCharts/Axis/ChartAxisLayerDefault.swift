@@ -178,7 +178,11 @@ class ChartAxisLayerDefault: ChartAxisLayer {
     }
 
     func innerScreenLocForScalar(scalar: Double, firstAxisScalar: Double) -> CGFloat {
-        return self.length * CGFloat(scalar - firstAxisScalar) / self.modelLength
+        var length = self.modelLength
+        if length == 0 || !length.isFinite {
+            length = 1
+        }
+        return self.length * CGFloat(scalar - firstAxisScalar) / length
     }
     
     func screenLocForScalar(scalar: Double, firstAxisScalar: Double) -> CGFloat {
